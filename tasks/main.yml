@@ -1,0 +1,25 @@
+---
+# tasks file for vector-role
+- name: 'Include OS Family Specific Variables'
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_os_family | lower }}.yml"
+        - 'empty.yml'
+      paths:
+        - 'vars'
+  tags: [always]
+
+- name: 'Debug vars'
+  ansible.builtin.debug:
+    msg: "{{ vector_install_type | lower }}"
+
+- name: 'Show not supported'
+  when: not vector_supported|bool
+  fail: 
+    msg: "Your distribution {{ ansible_distribution }}_{{ ansible_distribution_release }} not supported by this role, sorry."
+  tags: [always]
+
+- include_tasks: "{{ vector_install_type }}.yml"
+  tags: [always]
